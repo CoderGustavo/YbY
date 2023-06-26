@@ -4,7 +4,6 @@ const Humidity = require('../models/humidity')
 const Sensor = require('../models/sensor')
 const User = require('../models/user')
 const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey('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')
 
 router.post('/', async (req, res) => {
     const {humidityValue, name} = req.body
@@ -18,18 +17,7 @@ router.post('/', async (req, res) => {
         await sensor.save()
         
         if(humidityValue >= 50){
-            const msg = {
-                to: user.email,
-                from: 'yby.alerta@gmail.com',
-                subject: 'ALERTA: UMIDADE DO SOLO ELEVADA',
-                text: `O sensor ${sensor.name} registrou umidade de ${humidityValue}%. Essa umidade é crítica e pode ocasionar escorregamentos na região.`
-            }
-
-            sgMail.send(msg).then(()=>{
-                console.log('E-mail enviado com sucesso')
-            }).catch((error)=>{
-                console.error('Erro ao enviar o e-mail: ', error)
-            })
+        
         }
         res.status(200).json(humidity)
     } catch (error) {
