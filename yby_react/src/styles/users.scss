@@ -1,0 +1,18 @@
+@import "./custom_colors";
+@import "./fonts";
+
+.users{
+    padding-top: 40px !important;
+    background-color: rgba(240, 238, 238, 0.699);
+    
+    .card-content{
+        padding: 40px;
+    }
+
+    .users-edit{
+        .title{
+            margin-bottom: 15px;
+            font-family: 'Biome';
+        }
+    }
+}

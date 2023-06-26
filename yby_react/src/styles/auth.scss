@@ -1,0 +1,22 @@
+@import "./custom_colors";
+@import "./fonts";
+
+.auth{
+    background-image: url(../assets/images/criançasFavela.jpg);
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: calc(100vh - 70px);
+    height: fit-content;
+}
+
+.main-subtitle{
+    font-family: 'Biome';
+}
+
+.card-content{
+    padding: 0px;
+}
+
+.section{
+    padding: 20px;
+}

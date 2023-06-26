@@ -1,0 +1,75 @@
+@import "./custom_colors";
+@import "./fonts";
+
+.sensors{
+    height: calc(100% - 70px);
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    background-color: rgba(240, 238, 238, 0.699);
+}
+
+.bm-menu{
+    background-color: white;
+    padding: 10px;
+
+}
+
+.ativado{
+    background-color: $custom-yellow;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.item-desativado{
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.sensors-map{
+    z-index: 0;
+}
+
+.info-sensors{
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#nome-sensor{
+    font-family: 'Biome';
+    color: rgb(204, 11, 11);
+}
+
+p > strong{
+    font-family: 'Biome';
+}
+
+.btn-edit{
+    margin-left: 10px;
+}
+
+.sensors-create{
+    margin: 20px auto 0 auto;
+}
+
+.title{
+    font-family: 'Biome';
+}
+
+.sensors-edit{
+    margin: 20px auto 0 auto;
+}
+
+#chart {
+    width: 400px;
+    height: 200px;
+}
+.bar {
+    fill: rgba(70, 109, 180, 0.6);
+}
+.bar.red {
+    fill: $custom-red;
+}

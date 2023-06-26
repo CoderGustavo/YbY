@@ -1,0 +1,44 @@
+@import "./custom_colors";
+@import "./fonts";
+
+.home{
+    background-image: url(../assets/images/FundoImagem.jpg);
+    background-size: cover;
+    min-height: calc(100vh - 70px);
+    height: fit-content;
+    padding-top: 50px;
+}
+
+.celular{
+    max-height: 350px;
+}
+
+.main-title{
+    color: $custom-green;
+    text-align: center;
+    font-family: 'Biome';
+}
+
+.sub-title{
+    color: $custom-gold;
+    text-align: center;
+    font-size: 2rem;
+    font-family: 'Bahn';
+}
+
+.descricao{
+    height: fit-content;
+    padding-top: 40px;
+    font-family: 'Bahn';
+    text-align: justify;
+}
+
+.imagem-lateral{
+    height: fit-content;
+}
+
+.meu-cadastro{
+    background-color: $custom-yellow;
+    color:black;
+    box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.5);
+}
