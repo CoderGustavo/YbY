@@ -26,12 +26,12 @@ router.post('/login', async (req, res) =>{
   try {
     let user = await User.findOne({email})
     if (!user){
-      res.status(401).json({error: 'E-mail e/ou senha incorretos'})
+      res.status(401).json({error: 'E-mail incorreto.'})
     }
     else{
       user.isCorrectPassword(password, function(err, same){
         if(!same){
-          res.status(401).json({error: 'E-mail e/ou senha incorretos'})
+          res.status(401).json({error: 'Senha incorreta.'})
         }
         else{
           const token = jwt.sign({email}, secret, {expiresIn: '10d'})

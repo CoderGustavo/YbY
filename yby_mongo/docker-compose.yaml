@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+    mongodb:
+        container_name: yby-mongodb
+        image: mongo:latest
+        restart: unless-stopped
+        ports:
+            - 27017:27017
+        networks:
+            - local_network
+        volumes:
+            - db:/data/db
+
+volumes:
+    db:
+
+networks:
+  local_network:
+    external: true
