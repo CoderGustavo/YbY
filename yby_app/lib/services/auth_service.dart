@@ -38,6 +38,7 @@ class AuthService {
 
   Future<void> logout() async {
     await _secureStorage.deleteToken();
+    await _secureStorage.deleteId();
   }
 
   Future<bool> isLoggedIn() async {

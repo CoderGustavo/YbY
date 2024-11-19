@@ -1,11 +1,30 @@
+import 'package:app_yby/services/secure_storage_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:developer';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
+  @override
+  _WelcomeScreenState createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  final SecureStorageService _secureStorage = SecureStorageService();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkToken();
+  }
+
+  Future<void> _checkToken() async {
+    final token = await _secureStorage.getToken();
+    if (token != null && token.isNotEmpty) {
+      // Redireciona para /home se o token estiver presente
+      Navigator.pushNamed(context, '/home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: Center(
         child: Column(

@@ -14,4 +14,17 @@ class SecureStorageService {
   Future<void> deleteToken() async {
     await _storage.delete(key: 'auth_token');
   }
+
+  Future<void> saveId(String token) async {
+    await _storage.write(key: 'user_id', value: token);
+  }
+
+  Future<String?> getId() async {
+    return await _storage.read(key: 'user_id');
+  }
+
+  Future<void> deleteId() async {
+    await _storage.delete(key: 'user_id');
+  }
+
 }

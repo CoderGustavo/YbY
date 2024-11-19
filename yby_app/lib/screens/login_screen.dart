@@ -9,7 +9,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  
+
   String? message;
 
   @override
@@ -96,6 +96,9 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () async {
+                  setState(() {
+                    message = 'Acessando... Aguarde.';
+                  });
                   bool logged = await AuthService().login(
                     emailController.text,
                     passwordController.text,

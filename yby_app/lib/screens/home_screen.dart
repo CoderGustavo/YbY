@@ -2,6 +2,7 @@ import 'package:app_yby/services/auth_service.dart';
 import 'package:app_yby/services/data_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -13,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late final MapController _mapController;
-  Position? _currentPosition;
   List<BarChartGroupData> _barChartData = [];
   List<String> _barTitles = [];
   bool isLoading = true;
@@ -27,41 +27,27 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _initializeData() async {
-    await _getCurrentLocation();
-    await _fetchChartData();
+    await _fetchChartData(null);
     setState(() {
       isLoading = false;
     });
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return;
-      }
-      if (permission == LocationPermission.deniedForever) return;
-
-      Position position = await Geolocator.getCurrentPosition();
-      setState(() {
-        _currentPosition = position;
-        _mapController.move(
-          LatLng(position.latitude, position.longitude),
-          13.0,
-        );
-      });
-    } catch (e) {
-      print("Erro ao obter localização: $e");
-    }
+  String formatDate(String dateString) {
+    DateTime dateTime = DateTime.parse(dateString);
+    var formatter = DateFormat('dd/MM/yyyy HH:mm');
+    return formatter.format(dateTime);
   }
 
-  Future<void> _fetchChartData() async {
+  Future<void> _fetchChartData(id) async {
     try {
-      List<dynamic> data = await DataService().getData();
+      List<dynamic> data;
+      if (id == null) {
+        List<dynamic> sensor = await DataService().getSensors();
+        data = sensor[0]["humidityData"];
+      } else {
+        data = await DataService().getSensor(id);
+      }
 
       if (data.isNotEmpty) {
         setState(() {
@@ -73,8 +59,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   x: entry.key,
                   barRods: [
                     BarChartRodData(
-                      toY: entry.value['value'].toDouble(),
-                      color: Colors.blueAccent,
+                      toY: double.parse(entry.value["humidityValue"]),
+                      color: double.parse(entry.value["humidityValue"]) < 40
+                          ? Colors.blue
+                          : (double.parse(entry.value["humidityValue"]) <= 60)
+                              ? Colors.orange
+                              : Colors.red,
                       width: 20,
                     ),
                   ],
@@ -82,8 +72,9 @@ class _HomeScreenState extends State<HomeScreen> {
               )
               .toList();
 
-          _barTitles =
-              data.map<String>((item) => item['label'].toString()).toList();
+          _barTitles = data
+              .map<String>((item) => formatDate(item['created_at'].toString()))
+              .toList();
         });
       }
     } catch (e) {
@@ -96,48 +87,49 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(context).pushReplacementNamed('/');
   }
 
-Future<List<Marker>> _markers() async {
-  // Obtém os dados da API
-  final List<dynamic> data = await DataService().getData();
+  Future<List<Marker>> _markers() async {
+    // Obtém os dados da API
+    final List<dynamic> data = await DataService().getSensors();
 
-  // Verifica se os dados estão vazios
-  if (data.isEmpty) return [];
+    // Verifica se os dados estão vazios
+    if (data.isEmpty) return [];
 
-  // Populando o formatted_data com os markers
-  List<Marker> formattedData = data.map((item) {
-    // Verifica se os campos locX, locY e name estão presentes
-    final double locX = item['locX']?.toDouble() ?? 0.0;
-    final double locY = item['locY']?.toDouble() ?? 0.0;
-    final String name = item['name'] ?? 'N/A';
+    // throw Exception(data);
 
-    // Cria o marker com os primeiros 3 caracteres do campo 'name'
-    return Marker(
-      point: LatLng(locX, locY),
-      width: 80,
-      height: 80,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.location_pin,
-            color: Colors.red,
-            size: 40,
-          ),
-          Text(
-            name.substring(0, 3), // Exibe os 3 primeiros caracteres
-            style: const TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
+    // Populando o formatted_data com os markers
+    List<Marker> formattedData = data.map((item) {
+      // Verifica se os campos locX, locY e name estão presentes
+      final double locX = double.tryParse(item['locX'] ?? '') ?? 0.0;
+      final double locY = double.tryParse(item['locY'] ?? '') ?? 0.0;
+      final String name = item['name'] ?? 'N/A';
+
+      // Cria o marker com os primeiros 3 caracteres do campo 'name'
+      return Marker(
+        point: LatLng(locX, locY),
+        width: 80,
+        height: 80,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.location_pin,
+              color: Colors.red,
+              size: 40,
             ),
-          ),
-        ],
-      ),
-    );
-  }).toList();
+            Text(
+              name.substring(0, 3), // Exibe os 3 primeiros caracteres
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
 
-  return formattedData;
-}
-
+    return formattedData;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,47 +169,41 @@ Future<List<Marker>> _markers() async {
                 children: [
                   Expanded(
                       flex: 4,
-                      child: _currentPosition == null
-                          ? const Center(child: CircularProgressIndicator())
-                          : FlutterMap(
-                              mapController: _mapController,
-                              options: MapOptions(
-                                initialCenter: _currentPosition != null
-                                    ? LatLng(_currentPosition!.latitude,
-                                        _currentPosition!.longitude)
-                                    : const LatLng(-22.2901704, -46.6103562),
-                                initialZoom: 13.0,
-                              ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate: isDarkMode
-                                      ? 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
-                                      : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  userAgentPackageName: 'com.example.yby',
-                                ),
-                                FutureBuilder<List<Marker>>(
-                                  future: _markers(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const Center(
-                                          child: CircularProgressIndicator());
-                                    } else if (snapshot.hasError) {
-                                      return const Center(
-                                          child: Text(
-                                              'Nenhum sensor encontrado!'));
-                                    } else if (!snapshot.hasData ||
-                                        snapshot.data!.isEmpty) {
-                                      return const SizedBox();
-                                    }
+                      child: FlutterMap(
+                        mapController: _mapController,
+                        options: MapOptions(
+                          initialCenter: const LatLng(-22.2901704, -46.6103562),
+                          initialZoom: 13.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: isDarkMode
+                                ? 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png'
+                                : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.yby',
+                          ),
+                          FutureBuilder<List<Marker>>(
+                            future: _markers(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              } else if (snapshot.hasError) {
+                                return const Center(
+                                    child: Text('Nenhum sensor encontrado!'));
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data!.isEmpty) {
+                                return const SizedBox();
+                              }
 
-                                    return MarkerLayer(
-                                      markers: snapshot.data!,
-                                    );
-                                  },
-                                ),
-                              ],
-                            )),
+                              return MarkerLayer(
+                                markers: snapshot.data!,
+                              );
+                            },
+                          ),
+                        ],
+                      )),
 
                   // Alerta (cor fixa para o texto)
                   Padding(
@@ -246,7 +232,7 @@ Future<List<Marker>> _markers() async {
                   Expanded(
                     flex: 2,
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.only(left: 8, right: 8, bottom: 20, top: 8),
                       child: _barChartData.isEmpty
                           ? const Center(child: Text('Nenhum dado disponível'))
                           : BarChart(
@@ -259,8 +245,12 @@ Future<List<Marker>> _markers() async {
                                       getTitlesWidget:
                                           (double value, TitleMeta meta) {
                                         if (value.toInt() < _barTitles.length) {
-                                          return Text(
-                                              _barTitles[value.toInt()]);
+                                          return Padding(padding: EdgeInsets.only(bottom: 0), child: SideTitleWidget(
+                                            axisSide: meta.axisSide,
+                                            angle: 75,
+                                            child:
+                                                Text(_barTitles[value.toInt()]),
+                                          ));
                                         }
                                         return const Text('');
                                       },
