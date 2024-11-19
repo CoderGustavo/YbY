@@ -1,2 +1,3 @@
 **/.env
+!/yby_app/assets/.env
 **/node_modules

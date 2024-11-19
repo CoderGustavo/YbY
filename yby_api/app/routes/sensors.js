@@ -36,7 +36,7 @@ router.get('/', withAuth, async (req, res) =>{
     try {
         let sensors = await Sensor.find({user: req.user._id}).populate('humidityData')
         res.json(sensors)
-    } catch (error) {
+    } catch (error) {getData
         res.status(500).json({error: 'Problema ao carregar sensor(es) do usuário'})
     }
 })
